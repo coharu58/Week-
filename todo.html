@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple TODO List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  
+  <body class="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+    <main class="w-full max-w-xl rounded-2xl bg-white p-6 shadow-lg">
+      <h1 class="text-3xl font-bold text-center mb-6">TODOリスト</h1>
+
+      <form id="todo-form" class="flex gap-3 mb-6" novalidate>
+        <input
+          id="todo-input"
+          type="text"
+          placeholder="やることを入力"
+          aria-label="新しいタスク"
+          class="flex-1 rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+        />
+        <button
+          type="submit"
+          class="rounded-xl bg-blue-500 px-5 py-3 font-semibold text-white transition hover:bg-blue-600"
+        >
+          追加
+        </button>
+      </form>
+
+      <ul id="todo-list" class="space-y-3" aria-live="polite"></ul>
+
+      <div id="empty-state" class="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-5 text-center text-slate-500">
+        まだタスクはありません
+      </div>
+    </main>
+
+    <script>
+      const todoForm = document.getElementById('todo-form');
+      const todoInput = document.getElementById('todo-input');
+      const todoList = document.getElementById('todo-list');
+      const emptyState = document.getElementById('empty-state');
+
+      function toggleEmptyState() {
+        emptyState.style.display = todoList.children.length === 0 ? 'block' : 'none';
+      }
+
+      function createTaskElement(taskText) {
+        const item = document.createElement('li');
+        item.className = 'rounded-xl border border-slate-200 bg-slate-50 p-3';
+
+        const taskRow = document.createElement('div');
+        taskRow.className = 'flex items-center gap-3';
+
+        const text = document.createElement('span');
+        text.className = 'flex-1 break-words';
+        text.textContent = taskText;
+
+        const completeButton = document.createElement('button');
+        completeButton.type = 'button';
+        completeButton.textContent = '完了';
+        completeButton.className = 'rounded-lg bg-green-100 px-3 py-2 text-sm font-medium text-green-700 transition hover:bg-green-200';
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.textContent = '削除';
+        deleteButton.className = 'rounded-lg bg-red-100 px-3 py-2 text-sm font-medium text-red-700 transition hover:bg-red-200';
+
+        const confirmDelete = document.createElement('div');
+        confirmDelete.className = 'mt-3 hidden items-center justify-end gap-2 border-t border-slate-200 pt-3';
+        confirmDelete.innerHTML = `
+          <span class="text-sm text-slate-600">削除しますか？</span>
+          <button type="button" class="confirm-delete-btn rounded-lg bg-red-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-600">はい</button>
+          <button type="button" class="cancel-delete-btn rounded-lg bg-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-300">キャンセル</button>
+        `;
+
+        taskRow.appendChild(text);
+        taskRow.appendChild(completeButton);
+        taskRow.appendChild(deleteButton);
+        item.appendChild(taskRow);
+        item.appendChild(confirmDelete);
+
+        completeButton.addEventListener('click', () => {
+          item.classList.toggle('line-through');
+          text.classList.toggle('line-through');
+          text.classList.toggle('text-slate-400');
+        });
+
+        deleteButton.addEventListener('click', () => {
+          confirmDelete.classList.remove('hidden');
+          confirmDelete.classList.add('flex');
+        });
+
+        confirmDelete.querySelector('.confirm-delete-btn').addEventListener('click', () => {
+          item.remove();
+          toggleEmptyState();
+        });
+
+        confirmDelete.querySelector('.cancel-delete-btn').addEventListener('click', () => {
+          confirmDelete.classList.add('hidden');
+          confirmDelete.classList.remove('flex');
+        });
+
+        return item;
+      }
+
+      todoForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const taskText = todoInput.value.trim();
+        if (!taskText) {
+          todoInput.focus();
+          return;
+        }
+
+        const newTask = createTaskElement(taskText);
+        todoList.appendChild(newTask);
+        toggleEmptyState();
+        todoInput.value = '';
+        todoInput.focus();
+      });
+
+      toggleEmptyState();
+    </script>
+  </body>
+</html>
